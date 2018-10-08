@@ -11,13 +11,19 @@ class Settings():
         self.bg_color = (115, 196, 252)
 
         #  Ship settings:
-        self.plane_limit = 1
+        self.plane_limit = 2
 
         #  Bullet settings:
         self.bullet_width = 6
         self.bullet_height = 20
         self.bullet_color = 60, 60, 60
         self.bullets_allowed = 5
+
+        #  Laser settings:
+        self.laser_width = 3
+        self.laser_height = 15
+        self.laser_color = 255, 10, 10
+        self.laser_freq = 70
 
         #  Alien settings
         self.fleet_drop_speed = 10
@@ -32,6 +38,7 @@ class Settings():
     def initialize_dynamic_settings(self):
         self.plane_speed_factor = 3
         self.bullet_speed_factor = 3
+        self.laser_speed_factor = 3
         self.alien_speed_factor = 3
 
         #  1 is right, -1 is left

@@ -35,6 +35,8 @@ def run_game():
     bullets = Group()
     #  Make a group to store aliens in
     aliens = Group()
+    #  Make a lasers group
+    lasers = Group()
 
     #  Create the fleet of aliens
     gf.create_fleet(ai_settings, screen, plane, aliens)
@@ -47,9 +49,10 @@ def run_game():
         if stats.game_active:
             plane.update()
             gf.update_bullets(ai_settings, screen, stats, sb, plane, aliens, bullets)
-            gf.update_aliens(ai_settings, stats, sb, screen, plane, aliens, bullets)
+            gf.update_aliens(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers)
+            gf.update_lasers(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers)
 
-        gf.update_screen(ai_settings, screen, stats, sb, plane, aliens, bullets, play_button)
+        gf.update_screen(ai_settings, screen, stats, sb, plane, aliens, bullets, play_button, lasers)
 
         #  What for keyboard and mouse events.
         for event in pygame.event.get():

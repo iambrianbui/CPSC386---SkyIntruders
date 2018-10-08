@@ -4,6 +4,7 @@ from time import sleep
 import pygame
 from bullet import Bullet
 from alien import Alien
+from laser import Laser
 
 
 #  Create an alien and find the number of aliens that can fit
@@ -15,7 +16,7 @@ def get_number_aliens_x(ai_settings, alien_width):
 
 #  Determine how many rows can fit
 def get_number_rows(ai_settings, plane_height, alien_height):
-    available_space_y = (ai_settings.screen_height - (3 * alien_height) - plane_height)
+    available_space_y = (ai_settings.screen_height - (2 * alien_height) - plane_height)
     number_rows = int(available_space_y / (2 * alien_height))
     return number_rows
 
@@ -51,6 +52,12 @@ def update_bullets(ai_settings, screen, stats, sb, plane, aliens, bullets):
 
     check_bullet_alien_collisions(ai_settings, screen, stats, sb, plane, aliens, bullets)
 
+def update_lasers(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers):
+    lasers.update()
+    for laser in lasers.copy():
+        if laser.rect.top >= ai_settings.screen_height:
+            lasers.remove(laser)
+    check_laser_collisions(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers)
 
 def check_bullet_alien_collisions(ai_settings, screen, stats, sb, plane, aliens, bullets):
     #  Check for any bullets that hit aliens
@@ -69,6 +76,11 @@ def check_bullet_alien_collisions(ai_settings, screen, stats, sb, plane, aliens,
 
         stats.level += 1
         sb.prep_level()
+
+def check_laser_collisions(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers):
+    for laser in lasers.copy():
+        if laser.rect.colliderect(plane.rect):
+            plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers)
 
 
 def check_keydown_events(event, ai_settings, screen, plane, bullets):
@@ -145,12 +157,14 @@ def check_play_button(ai_settings, screen, stats, sb, play_button, plane, aliens
 
 
 #  Update the screen
-def update_screen(ai_settings, screen, stats, sb, plane, aliens, bullets, play_button):
+def update_screen(ai_settings, screen, stats, sb, plane, aliens, bullets, play_button, lasers):
     #  Redraw every frame
     screen.fill(ai_settings.bg_color)
     #  Redraw all bullets behind ship and aliens
     for bullet in bullets.sprites():
         bullet.draw_bullet()
+    for laser in lasers.sprites():
+        laser.draw_laser()
     plane.blitme()
     aliens.draw(screen)
 
@@ -179,7 +193,7 @@ def change_fleet_direction(ai_settings, aliens):
     ai_settings.fleet_direction *= -1
 
 
-def plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets):
+def plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers):
     if stats.planes_left > 1:
         #  Decrement ships left
         stats.planes_left -= 1
@@ -190,6 +204,7 @@ def plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets):
         #  Reload aliens and bullets
         aliens.empty()
         bullets.empty()
+        lasers.empty()
 
         #  Reset fleet and plane
         create_fleet(ai_settings, screen, plane, aliens)
@@ -203,26 +218,25 @@ def plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets):
         gameoversound.play()
         pygame.mouse.set_visible(True)
 
-
-def update_aliens(ai_settings, stats, sb, screen, plane, aliens, bullets):
+def update_aliens(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers):
     check_fleet_edges(ai_settings, aliens)
-    aliens.update()
+    aliens.update(ai_settings, screen, lasers)
 
     #  Check alien-plane collisions
     if pygame.sprite.spritecollideany(plane, aliens):
         print("Ship hit!!!")
         plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets)
 
-    check_aliens_bottom(ai_settings, stats, sb, screen, plane, aliens, bullets)
+    check_aliens_bottom(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers)
 
 
 #  Anything that hits the bottom
-def check_aliens_bottom(ai_settings, stats, sb, screen, plane, aliens, bullets):
+def check_aliens_bottom(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers):
     screen_rect = screen.get_rect()
     for alien in aliens.sprites():
         if alien.rect.bottom >= screen_rect.bottom:
             #  Treat it as if the ship got hit
-            plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets)
+            plane_hit(ai_settings, stats, sb, screen, plane, aliens, bullets, lasers)
             break
 
 
@@ -231,3 +245,5 @@ def check_high_score(stats, sb):
     if stats.score > stats.high_score:
         stats.high_score = stats.score
         sb.prep_high_score()
+        f = open("highscore.txt", 'w')
+        f.write(str(stats.score))

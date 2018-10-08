@@ -26,6 +26,10 @@ class Plane(Sprite):
         self.moving_right = False
         self.moving_left = False
 
+        #  See if the plane needs to be destroyed
+        self.plane_alive = True
+        self.index = 0
+
 
     def center_plane(self):
         self.center = self.screen_rect.centerx
@@ -38,7 +42,6 @@ class Plane(Sprite):
             self.center -= self.ai_settings.plane_speed_factor
         self.rect.centerx = self.center
 
+
     def blitme(self):
         self.screen.blit(self.image, self.rect)
-
-
